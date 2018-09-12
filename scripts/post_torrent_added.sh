@@ -50,15 +50,6 @@ echo "        -- File Name: $torrentname" >> $logfilename
 echo "        -- Location: $torrentpath" >> $logfilename
 echo "  -----------------------------------------------------------------------------------------------" >> $logfilename
 
-#Check for important torrent to download regardless of swarm entry point
-while read p; do
-  if [[ "$torrentname" =~ ^$p* ]]; then
-    echo "Important torrent $torrentname matches entry $p - Leaving in client regardless of announce" >> $logfilename
-    exit 1
-echo "====================================================================================================" >> $logfilename
-  fi
-done <$important_torrents
-
 # Here we are getting the details of the torrent using the torrent id and
 #    then we are inspecting the result of the tracker announce.  If not
 #    successful, meaning we get back and unregistered, sent, or C/connect status,
@@ -98,6 +89,17 @@ case "$trackerstatus" in
 
     if [ "$c" -le 100 ]; then  ## if the counter c is less than 100 then that means a good announce was not found in the loop so remove the torrent from the client
         echo "** Error ** Could not get a good Announce quickly enough.  Ditching this torrent. $trackerstatus" >> $logfilename
+
+        #Check for important torrent to download regardless of swarm entry point
+        while read p; do  ## loop over the list of strings from the important.torrents file
+          if [[ "$torrentname" =~ ^$p* ]]; then  ## If there is a partial (regex) match then leave torrent alone (dont remove)
+            echo " ** BUT ** This is an important torrent and matches entry $p so I'm leaving it in client regardless of announce" >> $logfilename
+            echo "====================================================================================================" >> $logfilename
+            exit 1
+          fi
+        done <$important_torrents
+
+        ## Okay, we are in the logic where the announce was not successful so we are going to remove the torrent and not take the ratio hit.
         eval /usr/local/bin/deluge-console "connect 127.0.0.1:$delugeport $delugeid $delugepasswd\; rm '$torrentid'\; "
         echo "====================================================================================================" >> $logfilename
         exit 1
