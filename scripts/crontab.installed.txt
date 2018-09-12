@@ -1,0 +1,8 @@
+# m h  dom mon dow   command
+10 2 * * * rm -rf ~/private/deluge/delete/*
+12 1 * * * ~/scripts/autoclean.sh torrentleech 8 >> ~/logs/autoclean-tl.log
+32 1 * * * ~/scripts/autoclean.sh passthepopcorn 2 >> ~/logs/autoclean-ptp.log
+52 1 * * * ~/scripts/autoclean.sh waffles 2 >> ~/logs/autoclean-wf.log
+2 12 * * * ~/scripts/compress_backup_logs.sh
+3,8,13,18,23,28,33,38,43,48,53,58 * * * * ~/scripts/seeding.sh >> ~/logs/seeding.log
+
